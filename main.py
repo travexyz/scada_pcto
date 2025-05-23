@@ -1,13 +1,12 @@
-import random
 import docker
 import tkinter as tk
 import threading
 
 class ContainerManager:
     def __init__(self, port):
-        self.port = port
-        self.gui_manager = None
         self.client = docker.from_env()
+        self.gui_manager = None
+        self.port = port
 
         self.container_list = []
         self.started_containers = 0
@@ -71,10 +70,13 @@ class ContainerManager:
 
 
 class GUI_Manager:
-    def __init__(self, container_manager):
-        self.cm = container_manager
+    def __init__(self):
         self.window = tk.Tk()
         self.bg_color = "white"
+        self.container_manager = None
+
+    def set_container_manager(self, container_manager):
+        self.container_manager = container_manager
 
     def configure(self):
         #self.window.geometry("1500x600")
@@ -92,22 +94,26 @@ class GUI_Manager:
         amount_input.grid(row=1, column=0, pady=10)
 
         def start_containers_thread():
-            threading.Thread(target=lambda: self.cm.start_containers(info_label, amount_input.get()), daemon=True).start()
+            info_label.config(text= f"Starting {amount_input.get()} containers...", fg="black")
+            threading.Thread(target=lambda: self.container_manager.start_containers(info_label, amount_input.get()), daemon=True).start()
             
         start_button = tk.Button(text="Start containers", command=start_containers_thread)
         start_button.grid(row=4, column=0)
 
         def stop_containers_thread():
-            threading.Thread(target=lambda: self.cm.stop_containers(info_label), daemon=True).start()
+            info_label.config(text= f"Stopping {len(self.container_manager.container_list)} containers...", fg="black")
+            threading.Thread(target=lambda: self.container_manager.stop_containers(info_label), daemon=True).start()
 
         start_button = tk.Button(text="Stop and remove all containers", command=stop_containers_thread)
         start_button.grid(row=5, column=0)
 
-cm = ContainerManager(6000)
-gui = GUI_Manager(cm)
-cm.set_gui_manager(gui)
+container_manager = ContainerManager(6000)
+gui_manager = GUI_Manager()
 
-gui.configure()
+container_manager.set_gui_manager(gui_manager)
+gui_manager.set_container_manager(container_manager)
+
+gui_manager.configure()
 
 if __name__ == "__main__":
-    gui.window.mainloop()
+    gui_manager.window.mainloop()
