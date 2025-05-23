@@ -1,5 +1,6 @@
 import docker
 import tkinter as tk
+from tkinter import messagebox
 import threading
 
 class ContainerManager:
@@ -101,8 +102,11 @@ class GUI_Manager:
 
         def start_containers_thread():
             if not self.container_manager.lock.locked():
-                info_label.config(text= "Starting containers...", fg="black")
-                threading.Thread(target=lambda: self.container_manager.start_containers(info_label, amount_input.get()), daemon=True).start()
+                if messagebox.askyesno(title="Warning", message=f"Are you sure you want to start {amount_input.get()} containers?", icon="warning"):
+                    info_label.config(text= "Starting containers...", fg="black")
+                    threading.Thread(target=lambda: self.container_manager.start_containers(info_label, amount_input.get()), daemon=True).start()
+                else:
+                    pass
             else:
                 info_label.config(text= "Another thread is running, please wait!", fg="red")
             
