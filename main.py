@@ -8,6 +8,8 @@ class ContainerManager:
         self.gui_manager = None
         self.port = port
 
+        self.lock = threading.Lock()
+        
         self.container_list = []
         self.started_containers = 0
 
@@ -42,16 +44,18 @@ class ContainerManager:
             label.config(text = "Invalid input, insert an integer!", fg = "red")
             return
         
-        for i in range(amount):
-            unique_index = self.started_containers + i
+        with self.lock:
+            for i in range(amount):
+                unique_index = self.started_containers + i
+                
+                port = self.port + unique_index
+                
+                cont = self.create_container(f"cont_{unique_index}", port)
+                self.append_container(cont)
 
-            port = self.port + unique_index
-            cont = self.create_container(f"cont_{unique_index}", port)
-            self.append_container(cont)
+            self.started_containers += amount
 
-        self.started_containers += amount
-
-        label.config(text = f"Started {amount} containers successfully!", fg = "green")
+            label.config(text = f"Started {amount} containers successfully!", fg = "green")
     
     """Stoppa e rimuove tutti i container nella lista containers"""
     def stop_containers(self, label):
@@ -59,14 +63,16 @@ class ContainerManager:
             label.config(text = "No containers to stop!!", fg = "black")
             return
         
-        for i in range(len(self.container_list)):
-            container = self.container_list[0] # perche ogni volta scalano
-            
-            container.stop()
-            container.remove()
-            self.container_list.remove(container)
+        with self.lock:
+            for i in range(len(self.container_list)):
+                container = self.container_list[0] # perche ogni volta scalano
+                
+                
+                container.stop()
+                container.remove()
+                self.container_list.remove(container)
 
-        label.config(text = f"All containers stopped and removed!", fg = "green")
+            label.config(text = f"All containers stopped and removed!", fg = "green")
 
 
 class GUI_Manager:
@@ -94,15 +100,21 @@ class GUI_Manager:
         amount_input.grid(row=1, column=0, pady=10)
 
         def start_containers_thread():
-            info_label.config(text= f"Starting {amount_input.get()} containers...", fg="black")
-            threading.Thread(target=lambda: self.container_manager.start_containers(info_label, amount_input.get()), daemon=True).start()
+            if not self.container_manager.lock.locked():
+                info_label.config(text= "Starting containers...", fg="black")
+                threading.Thread(target=lambda: self.container_manager.start_containers(info_label, amount_input.get()), daemon=True).start()
+            else:
+                info_label.config(text= "Another thread is running, please wait!", fg="red")
             
         start_button = tk.Button(text="Start containers", command=start_containers_thread)
         start_button.grid(row=4, column=0)
 
         def stop_containers_thread():
-            info_label.config(text= f"Stopping {len(self.container_manager.container_list)} containers...", fg="black")
-            threading.Thread(target=lambda: self.container_manager.stop_containers(info_label), daemon=True).start()
+            if not self.container_manager.lock.locked():
+                info_label.config(text= f"Stopping {len(self.container_manager.container_list)} containers...", fg="black")
+                threading.Thread(target=lambda: self.container_manager.stop_containers(info_label), daemon=True).start()
+            else:
+                info_label.config(text= "Another thread is running, please wait!", fg="red")
 
         start_button = tk.Button(text="Stop and remove all containers", command=stop_containers_thread)
         start_button.grid(row=5, column=0)
