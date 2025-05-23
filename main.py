@@ -141,7 +141,8 @@ class GUI_Manager:
                 status_label.config(text=f"Stato: {container.status}")
             except:
                 self.cm.container_list.remove(container)
-                self.status_labels.remove((container, _name, _port, status_label))
+                
+                self.remove_label(container, _name, _port, status_label)
 
         threading.Thread(target=lambda: self.window.after(2000, self.update_container_info), daemon=True).start()
 
@@ -150,6 +151,7 @@ class GUI_Manager:
         port_label.destroy()
         status_label.destroy()
         self.status_labels.remove((cont, name_label, port_label, status_label))  # Rimuovi dalla lista
+        
 
     def remove_all_labels(self, container):
         # Rimuovi tutte le label associate a un container
