@@ -3,13 +3,26 @@ import tkinter as tk
 from tkinter import messagebox
 
 class GUIManager:
+    """
+    Gestisce l'interfaccia grafica per il controllo dei container Docker.
+    Permette di avviare, fermare e monitorare lo stato dei container tramite una GUI Tkinter.
+    """
     def __init__(self, container_manager):
+        """
+        Inizializza il gestore GUI.
+
+        Args:
+            container_manager: Istanza del gestore dei container Docker.
+        """
         self.cm = container_manager
         self.window = tk.Tk()
         self.bg_color = "white"
         self.status_labels = []
 
     def configure(self):
+        """
+        Configura la finestra principale e i widget dell'interfaccia grafica.
+        """
         self.window.title("Docker Container Manager")
         self.window.configure(background=self.bg_color)
 
@@ -23,6 +36,9 @@ class GUIManager:
         amount_input.grid(row=1, column=0, pady=10)
 
         def start_containers_thread():
+            """
+            Avvia i container in un thread separato per non bloccare la GUI.
+            """
             if not self.cm.lock.locked():
                 if messagebox.askyesno(title="Warning", message=f"Are you sure you want to start {amount_input.get()} containers?", icon="warning"):
                     info_label.config(text="Starting containers...", fg="black")
@@ -36,6 +52,9 @@ class GUIManager:
         start_button.grid(row=4, column=0)
 
         def stop_containers_thread():
+            """
+            Ferma e rimuove tutti i container in un thread separato.
+            """
             if not self.cm.lock.locked():
                 info_label.config(text=f"Stopping {len(self.cm.container_list)} containers...", fg="black")
                 threading.Thread(target=lambda: self.cm.stop_containers(info_label), daemon=True).start()
@@ -48,6 +67,13 @@ class GUIManager:
         self.update_container_info()
 
     def handle_start(self, label, amount):
+        """
+        Avvia i container e aggiorna la GUI con le nuove informazioni.
+
+        Args:
+            label: Label di stato da aggiornare.
+            amount: Numero di container da avviare.
+        """
         self.cm.start_containers(label, amount)
         
         for container in self.cm.container_list[len(self.status_labels):]:
@@ -68,6 +94,10 @@ class GUIManager:
             self.status_labels.append((container, name_label, port_label, status_label))
 
     def update_container_info(self):
+        """
+        Aggiorna periodicamente lo stato dei container nella GUI.
+        Rimuove dalla GUI i container che non esistono più.
+        """
         for container, _name, _port, status_label in self.status_labels:
             try:
                 container.reload()
@@ -79,6 +109,12 @@ class GUIManager:
         self.window.after(2000, self.update_container_info)
 
     def remove_label(self, cont):
+        """
+        Rimuove le label associate a un container dalla GUI.
+
+        Args:
+            cont: Il container di cui rimuovere le label.
+        """
         for c, name_label, port_label, status_label in self.status_labels:
             if c == cont:
                 name_label.destroy()

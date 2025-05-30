@@ -3,10 +3,12 @@ from configurations import ConfigurationReader
 from managers import ContainerManager, GUIManager
 
 def main(argv):
-    """main
+    """
+    Funzione principale dell'applicazione.
+    Inizializza la configurazione, il gestore dei container e la GUI, poi avvia il mainloop di Tkinter.
 
     Args:
-        argv (list of strings): wrapper for sys.argv
+        argv (list of str): wrapper per sys.argv
     """
     config = ConfigurationReader()
     config.configure()
