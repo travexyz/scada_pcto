@@ -1,16 +1,22 @@
 import sys
+from configurations import ConfigurationReader
 from managers import ContainerManager, GUIManager
 
-## FIXME/TODO: use `configparser` for configuring stuffs
-## and also, ANTANI
+CONFIG_FILE = 'config.ini'
 
 def main(argv):
-    """main
+    """
+    Funzione principale dell'applicazione.
+    Inizializza la configurazione, il gestore dei container e la GUI, poi avvia il mainloop di Tkinter.
 
     Args:
-        argv (list of strings): wrapper for sys.argv
+        argv (list of str): wrapper per sys.argv
     """
-    container_manager = ContainerManager(6000)
+    config = ConfigurationReader()
+    config.initialize_parser()
+    config.read_config(CONFIG_FILE)
+
+    container_manager = ContainerManager(int(config.configreader['configuration']['base_external_port']), config)
     gui_manager = GUIManager(container_manager)
     container_manager.set_gui_manager(gui_manager)
 
