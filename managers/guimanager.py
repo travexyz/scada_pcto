@@ -35,6 +35,23 @@ class GUIManager:
         start_button = tk.Button(text="Start containers", command=start_containers_thread)
         start_button.grid(row=4, column=0)
 
+
+        def switch_visualization():
+            """Change the visualization mode between numbers and graphic.
+            """
+            if self.cm.visualization == "numbers":
+                self.cm.visualization = "graphic"
+                switch_button.config(text="Switch to Numbers")
+                self.window.title("Docker Container Manager - Graphic Mode")
+            elif self.cm.visualization == "graphic":
+                self.cm.visualization = "numbers"
+                switch_button.config(text="Switch to Graphic")
+                self.window.title("Docker Container Manager - Numbers Mode")
+
+        
+        switch_button = tk.Button(text="Switch visualitazion mode", command=switch_visualization)
+        switch_button.grid(row=3, column=0)
+
         def stop_containers_thread():
             if not self.cm.lock.locked():
                 info_label.config(text=f"Stopping {len(self.cm.container_list)} containers...", fg="black")
