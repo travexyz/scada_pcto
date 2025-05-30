@@ -1,2 +1,2 @@
-.venv
-managers/__pycache__
+.venv/
+__pycache__/

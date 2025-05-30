@@ -1,8 +1,6 @@
 import sys
+from configurations import ConfigurationReader
 from managers import ContainerManager, GUIManager
-
-## FIXME/TODO: use `configparser` for configuring stuffs
-## and also, ANTANI
 
 def main(argv):
     """main
@@ -10,7 +8,11 @@ def main(argv):
     Args:
         argv (list of strings): wrapper for sys.argv
     """
-    container_manager = ContainerManager(6000)
+    config = ConfigurationReader()
+    config.configure()
+    config.readconfig('config.ini')
+
+    container_manager = ContainerManager(int(config.configreader['configuration']['base_port']))
     gui_manager = GUIManager(container_manager)
     container_manager.set_gui_manager(gui_manager)
 
