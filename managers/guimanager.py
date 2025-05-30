@@ -1,6 +1,8 @@
 import threading
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
+
 
 class GUIManager:
     def __init__(self, container_manager):
@@ -9,9 +11,26 @@ class GUIManager:
         self.bg_color = "white"
         self.status_labels = []
 
+    def get_selected_image(self):
+        global value
+        value = self.select.get()
+        return value
+
     def configure(self):
         self.window.title("Docker Container Manager")
         self.window.configure(background=self.bg_color)
+        
+        self.select = ttk.Combobox(self.window, state="readonly")
+        self.select['values'] = [
+            "nginx:latest",
+            "httpd:latest",
+            "alpine:latest",
+            "ubuntu:latest",
+            "debian:latest"]
+        
+        self.select.set("nginx:latest")
+        self.select.grid(row=2, column=0, padx=10, pady=10)
+
 
         label1 = tk.Label(self.window, text="Inserisci il numero di container:", fg="black", bg=self.bg_color, font=("Verdana", 16))
         label1.grid(row=0, column=0)

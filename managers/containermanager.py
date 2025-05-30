@@ -1,4 +1,7 @@
 import docker, threading
+from . import guimanager 
+
+from .guimanager import GUIManager
 
 class ContainerManager:
     """_summary_
@@ -7,10 +10,13 @@ class ContainerManager:
         self.client = docker.from_env()
         self.gui_manager = None
         self.port = port
+        self.gm = guimanager
+        
 
         self.lock = threading.Lock()
         self.container_list = []
         self.started_containers = 0
+
 
     def set_gui_manager(self, gui_manager):
         """_summary_
@@ -21,8 +27,9 @@ class ContainerManager:
         self.gui_manager = gui_manager
     
     def create_container(self, name, port):
+        self.selected = GUIManager.get_selected_image(self=self.gui_manager)
         return self.client.containers.run(
-            'nginx:latest',
+            self.selected,
             name=name,
             ports={'80/tcp': port},
             detach=True
