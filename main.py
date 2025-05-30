@@ -12,7 +12,7 @@ def main(argv):
     config.configure()
     config.readconfig('config.ini')
 
-    container_manager = ContainerManager(int(config.configreader['configuration']['base_port']))
+    container_manager = ContainerManager(int(config.configreader['configuration']['base_external_port']), config)
     gui_manager = GUIManager(container_manager)
     container_manager.set_gui_manager(gui_manager)
 
