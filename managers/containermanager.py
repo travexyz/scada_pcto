@@ -22,8 +22,6 @@ class ContainerManager:
         self.started_containers = 0
 
         self.config = config
-        self.config.configure()
-        self.config.readconfig('config.ini')
 
     def set_gui_manager(self, gui_manager):
         """

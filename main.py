@@ -2,6 +2,8 @@ import sys
 from configurations import ConfigurationReader
 from managers import ContainerManager, GUIManager
 
+CONFIG_FILE = 'config.ini'
+
 def main(argv):
     """
     Funzione principale dell'applicazione.
@@ -11,8 +13,8 @@ def main(argv):
         argv (list of str): wrapper per sys.argv
     """
     config = ConfigurationReader()
-    config.configure()
-    config.readconfig('config.ini')
+    config.initialize_parser()
+    config.read_config(CONFIG_FILE)
 
     container_manager = ContainerManager(int(config.configreader['configuration']['base_external_port']), config)
     gui_manager = GUIManager(container_manager)
