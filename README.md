@@ -70,6 +70,18 @@ python your_script.py
 
 Al termine, si aprirà la finestra dell’interfaccia grafica, pronta per la gestione dei container.
 
+![input](https://github.com/user-attachments/assets/cb1a1168-dd86-4f9f-a7e9-823fe762124d)
+
+Mostrando anche lo stato attuale dei container
+
+![container](https://github.com/user-attachments/assets/d7f44087-4379-4540-afea-67e68b20f837)
+
+
+La schermata sparirà una volta rimossi i container
+
+![kill](https://github.com/user-attachments/assets/43a38b74-892d-450b-8beb-7f55935235a4)
+
+
 ---
 
 ## 🔎 Considerazioni finali
