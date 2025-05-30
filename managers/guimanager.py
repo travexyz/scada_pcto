@@ -20,13 +20,11 @@ class GUIManager:
         self.window.title("Docker Container Manager")
         self.window.configure(background=self.bg_color)
         
-        self.select = ttk.Combobox(self.window, state="readonly")
+        self.select = ttk.Combobox(self.window, state="readonly")  # aggiungere nomi di container qua
         self.select['values'] = [
             "nginx:latest",
-            "httpd:latest",
-            "alpine:latest",
-            "ubuntu:latest",
-            "debian:latest"]
+            "httpd:latest",             
+            ]
         
         self.select.set("nginx:latest")
         self.select.grid(row=2, column=0, padx=10, pady=10)
