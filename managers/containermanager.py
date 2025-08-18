@@ -59,6 +59,15 @@ class ContainerManager:
         """
         self.container_list.append(container)
 
+    def start_container(self, container):
+        """
+        Avvia un container specifico.
+
+        Args:
+            container: Istanza del container da avviare.
+        """
+        container.start()
+
     def stop_container(self, container):
         """
         Ferma un container specifico.
@@ -68,7 +77,7 @@ class ContainerManager:
         """
         container.stop()
 
-    def delete_container(self, container):
+    def remove_container(self, container):
         """
         Ferma e rimuove un container specifico.
 
