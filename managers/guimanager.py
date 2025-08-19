@@ -88,7 +88,7 @@ class GUIManager:
                 else:
                     pass # bisogna mostrare un avviso all'utente
 
-            stop_button = tk.Button(text="Stop this", command=lambda c=container: stop_container_button_thread(c))
+            stop_button = tk.Button(text="Stop", command=lambda c=container: stop_container_button_thread(c))
             stop_button.grid(row=idx, column=4, padx=10, pady=10)
 
             def start_container_button_thread(container):
@@ -97,7 +97,7 @@ class GUIManager:
                 else:
                     pass # bisogna mostrare un avviso all'utente
 
-            start_button = tk.Button(text="Start this", command=lambda c=container: start_container_button_thread(c))
+            start_button = tk.Button(text="Start", command=lambda c=container: start_container_button_thread(c))
             start_button.grid(row=idx, column=5, padx=10, pady=10)
 
             def remove_container_button_thread(container):
@@ -106,7 +106,7 @@ class GUIManager:
                 else:
                     pass # bisogna mostrare un avviso all'utente
 
-            remove_button = tk.Button(text="Remove this", command=lambda c=container: remove_container_button_thread(c))
+            remove_button = tk.Button(text="Remove", command=lambda c=container: remove_container_button_thread(c))
             remove_button.grid(row=idx, column=6, padx=10, pady=10)
 
             name_label = tk.Label(self.window, text=name, bg=self.bg_color, font=("Verdana", 12))
