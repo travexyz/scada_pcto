@@ -40,12 +40,12 @@ class GUIManager:
             """
             Avvia i container in un thread separato per non bloccare la GUI.
             """
+            # Acquisisce direttamente il lock nella sezione critica
             if not self.cm.lock.locked():
-                if messagebox.askyesno(title="Warning", message=f"Are you sure you want to start {amount_input.get()} containers?", icon="warning"):
-                    info_label.config(text="Starting containers...", fg="black")
-                    threading.Thread(target=self.handle_start, args=(info_label, amount_input.get()), daemon=True).start()
-                else:
-                    pass
+                with self.cm.lock:
+                    if messagebox.askyesno(title="Warning", message=f"Are you sure you want to start {amount_input.get()} containers?", icon="warning"):
+                        info_label.config(text="Starting containers...", fg="black")
+                        threading.Thread(target=self.handle_start, args=(info_label, amount_input.get()), daemon=True).start()
             else:
                 info_label.config(text="Another thread is running, please wait!", fg="red")
             
@@ -57,17 +57,16 @@ class GUIManager:
             Ferma e rimuove tutti i container in un thread separato.
             """
             if not self.cm.lock.locked():
-                info_label.config(text=f"Stopping {len(self.cm.container_list)} containers...", fg="black")
-                threading.Thread(target=self.cm.stop_containers, args=(info_label,), daemon=True).start()
+                with self.cm.lock:
+                    info_label.config(text=f"Stopping {len(self.cm.container_list)} containers...", fg="black")
+                    threading.Thread(target=self.cm.stop_containers, args=(info_label,), daemon=True).start()
             else:
                 info_label.config(text="Another thread is running, please wait!", fg="red")
 
         stop_button = tk.Button(text="Stop and remove all containers", command=stop_containers_thread)
         stop_button.grid(row=5, column=0)
 
-        self.update_container_status()
-
-    def handle_start(self, label, amount):
+    def handle_start(self, info_label, amount):
         """
         Avvia i container e aggiorna la GUI con le nuove informazioni.
 
@@ -75,7 +74,7 @@ class GUIManager:
             label: Label di stato da aggiornare.
             amount: Numero di container da avviare.
         """
-        self.cm.start_containers(label, amount)
+        self.cm.start_containers(info_label, amount)
         
         for container in self.cm.container_list[len(self.status_labels):]:
             idx = len(self.status_labels)
@@ -93,23 +92,48 @@ class GUIManager:
             status_label.grid(row=idx, column=3, padx=10, pady=10)
 
             # Pulsante Stop
+            def stop_container_thread(c=container):
+                with self.cm.lock:
+                    info_label.config(text="Stopping container...", fg="black")
+                    try:
+                        self.cm.stop_container(c)
+                        info_label.config(text="Container stopped successfully!", fg="green")
+                    except Exception as e:
+                        info_label.config(text=f"Error: {e}", fg="red")
             stop_button = tk.Button(
                 text="Stop",
-                command=lambda c=container: threading.Thread(target=self.cm.stop_container, args=(c,), daemon=True).start()
+                command=lambda c=container: threading.Thread(target=stop_container_thread, args=(c,), daemon=True).start()
             )
             stop_button.grid(row=idx, column=4, padx=10, pady=10)
 
             # Pulsante Start
+            def start_container_thread(c=container):
+                with self.cm.lock:
+                    info_label.config(text="Starting container...", fg="black")
+                    try:
+                        self.cm.start_container(c)
+                        info_label.config(text="Container started successfully!", fg="green")
+                    except Exception as e:
+                        info_label.config(text=f"Error: {e}", fg="red")
+
             start_button = tk.Button(
                 text="Start",
-                command=lambda c=container: threading.Thread(target=self.cm.start_container, args=(c,), daemon=True).start()
+                command=lambda c=container: threading.Thread(target=start_container_thread, args=(c,), daemon=True).start()
             )
             start_button.grid(row=idx, column=5, padx=10, pady=10)
 
             # Pulsante Remove
+            def remove_container_thread(c=container):
+                with self.cm.lock:
+                    info_label.config(text="Removing container...", fg="black")
+                    try:
+                        self.cm.remove_container(c)
+                        info_label.config(text="Container removed successfully!", fg="green")
+                    except Exception as e:
+                        info_label.config(text=f"Error: {e}", fg="red")
             remove_button = tk.Button(
                 text="Remove",
-                command=lambda c=container: threading.Thread(target=self.cm.remove_container, args=(c,), daemon=True).start()
+                command=lambda c=container: threading.Thread(target=remove_container_thread, args=(c,), daemon=True).start()
             )
             remove_button.grid(row=idx, column=6, padx=10, pady=10)
 
@@ -119,6 +143,7 @@ class GUIManager:
             data_label = tk.Label(self.window, text="Data: ?", bg=self.bg_color, font=("Verdana", 12))
             data_label.grid(row=idx, column=8, padx=10, pady=10)
 
+            threading.Thread(target=self.update_containers_status, daemon=True).start()
             threading.Thread(target=self.update_container_data, args=(container, signal_type_label, data_label), daemon=True).start()
 
             self.status_labels.append((container, name_label, port_label, status_label, stop_button, start_button, remove_button, signal_type_label, data_label))
@@ -129,14 +154,14 @@ class GUIManager:
             msg = line.decode("utf-8").strip()
             try:
                 data = json.loads(msg)
-                print(f"{data['index']} -> {data['value']}")
-
-                signal_type_label.config(text=f"Tipo: {data['type']}")
-                data_label.config(text=f"Data: {data['data']}")
+                print(f"[{container.name}] {data['index']} -> {data['value']}")
+                signal_type_label.config(text=f"Tipo: {data['signal']}")
+                data_label.config(text=f"Data: {data['value']}")
             except json.JSONDecodeError:
+                print("JSONDecodeError")
                 pass
 
-    def update_container_status(self):
+    def update_containers_status(self):
         """
         Aggiorna periodicamente lo stato dei container nella GUI.
         Rimuove dalla GUI i container che non esistono più.
@@ -149,7 +174,7 @@ class GUIManager:
                 self.cm.container_list.remove(container)
                 self.remove_label(container)
         
-        self.window.after(500, self.update_container_status)
+        self.window.after(100, self.update_containers_status)
 
     def remove_label(self, cont):
         """
@@ -168,6 +193,8 @@ class GUIManager:
                 remove_button.destroy()
                 signal_type_label.destroy()
                 data_label.destroy()
-                self.status_labels.remove((c, name_label, port_label, status_label, stop_button, start_button, remove_button, signal_type_label, data_label))
+                self.status_labels.remove(
+                    (c, name_label, port_label, status_label, stop_button, start_button, remove_button, signal_type_label, data_label)
+                )
                 break
 

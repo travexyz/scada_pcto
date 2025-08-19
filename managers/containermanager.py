@@ -87,7 +87,7 @@ class ContainerManager:
         container.stop()
         container.remove()
 
-    def start_containers(self, label, amount):
+    def start_containers(self, status_label, amount):
         """
         Avvia un certo numero di container e aggiorna la GUI.
 
@@ -98,7 +98,7 @@ class ContainerManager:
         try:
             amount = int(amount)
         except ValueError:
-            label.config(text="Invalid input, insert an integer!", fg="red")
+            status_label.config(text="Invalid input, insert an integer!", fg="red")
             return
         
         with self.lock:
@@ -109,7 +109,7 @@ class ContainerManager:
                 self.append_container(cont)
 
             self.started_containers += amount
-            label.config(text=f"Started {amount} containers successfully!", fg="green")
+            status_label.config(text=f"Started {amount} containers successfully!", fg="green")
 
     def stop_containers(self, label):
         """
