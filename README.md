@@ -57,6 +57,10 @@ La classe `GUI_Manager` si occupa dell’interfaccia utente. Le sue principali c
 
 ## 🚀 Modalità di esecuzione
 
+> È necessario costruire l'immagine docker **signal-generator**:
+> 
+> ```cd ./app && docker build -t signal-generator .```
+
 Per eseguire l’applicazione, è necessario disporre di:
 
 * **Python 3**
