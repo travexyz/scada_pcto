@@ -87,7 +87,7 @@ class ContainerManager:
         container.stop()
         container.remove()
 
-    def start_containers(self, status_label, amount):
+    def start_all_containers(self, status_label, amount):
         """
         Avvia un certo numero di container e aggiorna la GUI.
 
@@ -111,7 +111,7 @@ class ContainerManager:
             self.started_containers += amount
             status_label.config(text=f"Started {amount} containers successfully!", fg="green")
 
-    def stop_containers(self, label):
+    def stop_all_containers(self, label):
         """
         Ferma e rimuove tutti i container gestiti e aggiorna la GUI.
 
@@ -123,11 +123,10 @@ class ContainerManager:
             return
         
         with self.lock:
-            for i in range(len(self.container_list)):
-                container = self.container_list[0]
+            for container in self.container_list[:]:
                 container.stop()
                 container.remove()
                 self.gui_manager.remove_label(container)
-                self.container_list.remove(container)
+            self.container_list.clear()
 
             label.config(text="All containers stopped and removed!", fg="green")
